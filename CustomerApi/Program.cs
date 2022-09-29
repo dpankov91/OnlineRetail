@@ -1,15 +1,14 @@
+using CustomerApi.Data;
+using CustomerApi.Models;
 using Microsoft.EntityFrameworkCore;
-using OrderApi.Data;
-using OrderApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
-builder.Services.AddDbContext<OrderApiContext>(opt => opt.UseInMemoryDatabase("OrdersDb"));
+builder.Services.AddDbContext<CustomerApiContext>(opt => opt.UseInMemoryDatabase("CustomersDb"));
 
 // Register repositories for dependency injection
-builder.Services.AddScoped<IRepository<Order>, OrderRepository>();
+builder.Services.AddScoped<IRepository<Customer>, CustomerRepository>();
 
 // Register database initializer for dependency injection
 builder.Services.AddTransient<IDbInitializer, DbInitializer>();
@@ -32,12 +31,12 @@ if (app.Environment.IsDevelopment())
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
-    var dbContext = services.GetService<OrderApiContext>();
+    var dbContext = services.GetService<CustomerApiContext>();
     var dbInitializer = services.GetService<IDbInitializer>();
     dbInitializer.Initialize(dbContext);
 }
 
-//app.UseHttpsRedirection();
+//app.UseHttpsRedirection()
 
 app.UseAuthorization();
 
