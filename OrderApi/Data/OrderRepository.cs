@@ -1,18 +1,27 @@
 ﻿using System.Collections.Generic;
 using Microsoft.EntityFrameworkCore;
 using System.Linq;
-using OrderApi.Models;
 using System;
+using SharedModels;
 
 namespace OrderApi.Data
 {
-    public class OrderRepository : IRepository<Order>
+    public class OrderRepository : IOrderRepository
     {
         private readonly OrderApiContext db;
 
         public OrderRepository(OrderApiContext context)
         {
             db = context;
+        }
+
+        public IEnumerable<Order> GetByCustomer(int customerId)
+        {
+            var ordersForCustomer = from o in db.Orders
+                                    where o.customerId == customerId
+                                    select o;
+
+            return ordersForCustomer.ToList();
         }
 
         Order IRepository<Order>.Add(Order entity)

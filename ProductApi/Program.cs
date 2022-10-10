@@ -1,8 +1,14 @@
 using Microsoft.EntityFrameworkCore;
 using ProductApi.Data;
+using ProductApi.Infrastructure;
 using ProductApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// RabbitMQ connection string (I use CloudAMQP as a RabbitMQ server).
+// Remember to replace this connectionstring with your own.
+string cloudAMQPConnectionString =
+   "host=hawk-01.rmq.cloudamqp.com;virtualHost=rcwkyiws;username=rcwkyiws;password=cIi2g1FSoUqzT1us2Jgi0R0TpDVCb-H4";
 
 // Add services to the container.
 
@@ -36,6 +42,10 @@ using (var scope = app.Services.CreateScope())
     var dbInitializer = services.GetService<IDbInitializer>();
     dbInitializer.Initialize(dbContext);
 }
+
+// Create a message listener in a separate thread.
+Task.Factory.StartNew(() =>
+    new MessageListener(app.Services, cloudAMQPConnectionString).Start());
 
 //app.UseHttpsRedirection();
 
