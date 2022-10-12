@@ -1,10 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Toolkit.Uwp.Notifications;
 using OrderApi.Data;
 using OrderApi.Infrastructure.MessagePublisher;
 using OrderApi.Infrastructure.ServiceGateaway;
-using RestSharp;
 using SharedModels;
-using System.Threading.Tasks;
 
 namespace OrderApi.Controllers
 {
@@ -15,13 +14,16 @@ namespace OrderApi.Controllers
         IOrderRepository repository;
         IServiceGateway<ProductDto> productServiceGateway;
         IMessagePublisher messagePublisher;
+        IServiceGateway<CustomerDto> customerServiceGateway;
 
         public OrdersController(IRepository<Order> repos,
-            IServiceGateway<ProductDto> gateway,
+            IServiceGateway<ProductDto> productGateway,
+            IServiceGateway<CustomerDto> customerGateway,
             IMessagePublisher publisher)
         {
             repository = repos as IOrderRepository;
-            productServiceGateway = gateway;
+            productServiceGateway = productGateway;
+            customerServiceGateway = customerGateway;
             messagePublisher = publisher;
         }
 
@@ -58,16 +60,30 @@ namespace OrderApi.Controllers
             {
                 try
                 {
-
                     //Sent via http order.customerID to customerAPI, customerAPI checks if user exists
                     var customerId = order.customerId;
-                    var apiUrl = "https://localhost:11000";
+                    var customer = customerServiceGateway.Get(customerId);
+                    if (customer.Id == 0)
+                    {
+                        new ToastContentBuilder()
+                        .AddArgument("action", "viewConversation")
+                        .AddArgument("conversationId", 9813)
+                        .AddText("User doesnt exist")
+                        .AddText("Please register to make an order");
 
-                    RestClient client = new RestClient(apiUrl);
-                    RestRequest request = new RestRequest("customer/"+customerId, Method.Get);
-                    var response = client.ExecuteAsync(request);
+                        return NotFound("Please register to make an order");
+                    }
 
+                    if (customer.isCreditStanding == false)
+                    {
+                        new ToastContentBuilder()
+                        .AddArgument("action", "viewConversation")
+                        .AddArgument("conversationId", 9813)
+                        .AddText("")
+                        .AddText("Please pay your bills first");
 
+                        return NotFound("Please pay your bills first");
+                    }
 
                     // Publish OrderStatusChangedMessage. If this operation
                     // fails, the order will not be created
@@ -79,14 +95,20 @@ namespace OrderApi.Controllers
                     var newOrder = repository.Add(order);
                     return CreatedAtRoute("GetOrder", new { id = newOrder.Id }, newOrder);
                 }
-                catch
+                catch(Exception ex)
                 {
-                    return StatusCode(500, "An error happened. Try again.");
+                    return StatusCode(500, ex.Message);
                 }
             }
             else
             {
                 // If there are not enough product items available.
+                new ToastContentBuilder()
+                .AddArgument("action", "viewConversation")
+                .AddArgument("conversationId", 9813)
+                .AddText("Not enough items in stock")
+                .AddText("Choose something else");
+
                 return StatusCode(500, "Not enough items in stock.");
             }
         }

@@ -12,7 +12,7 @@ namespace OrderApi.Infrastructure.ServiceGateaway
             productServiceBaseUrl = baseUrl;
         }
 
-        public ProductDto Get(int id)
+        public ProductDto Get(int? id)
         {
             RestClient c = new RestClient(productServiceBaseUrl);
 
