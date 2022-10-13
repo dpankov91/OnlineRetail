@@ -26,6 +26,15 @@ namespace ProductApi.Infrastructure
                 bus.PubSub.Subscribe<OrderStatusChangedMessage>("productApiHkCompleted",
                     HandleOrderCompleted, x => x.WithTopic("completed"));
 
+                bus.PubSub.Subscribe<OrderStatusChangedMessage>("productApiHkCancelled",
+                    HandleOrderCancelled, x => x.WithTopic("cancelled"));
+
+                bus.PubSub.Subscribe<OrderStatusChangedMessage>("productApiHkShipped",
+                    HandleOrderShipped, x => x.WithTopic("shipped"));
+
+                bus.PubSub.Subscribe<OrderStatusChangedMessage>("productApiHkPaid",
+                    HandleOrderPaid, x => x.WithTopic("paid"));
+
                 // Add code to subscribe to other OrderStatusChanged events:
                 // * cancelled
                 // * shipped
@@ -66,5 +75,34 @@ namespace ProductApi.Infrastructure
             }
         }
 
+        private void HandleOrderCancelled(OrderStatusChangedMessage message)
+        {
+            using (var scope = provider.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+
+
+            }
+        }
+
+        private void HandleOrderPaid(OrderStatusChangedMessage message)
+        {
+            using (var scope = provider.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+
+
+            }
+        }
+
+        private void HandleOrderShipped(OrderStatusChangedMessage message)
+        {
+            using (var scope = provider.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+
+
+            }
+        }
     }
 }

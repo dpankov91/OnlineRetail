@@ -65,21 +65,27 @@ namespace OrderApi.Controllers
                     var customer = customerServiceGateway.Get(customerId);
                     if (customer.Id == 0)
                     {
+                        //messagePublisher.PublishOrderStatusChangedMessage(
+                        //order.customerId, order.OrderLines, "cancelled");
+
                         new ToastContentBuilder()
                         .AddArgument("action", "viewConversation")
                         .AddArgument("conversationId", 9813)
                         .AddText("User doesnt exist")
-                        .AddText("Please register to make an order");
+                        .AddText("Please register to place an order");
 
-                        return NotFound("Please register to make an order");
+                        return NotFound("Please register to place an order");
                     }
 
                     if (customer.isCreditStanding == false)
                     {
+                        //messagePublisher.PublishOrderStatusChangedMessage(
+                        //order.customerId, order.OrderLines, "cancelled");
+
                         new ToastContentBuilder()
                         .AddArgument("action", "viewConversation")
                         .AddArgument("conversationId", 9813)
-                        .AddText("")
+                        .AddText("Unpaid bills")
                         .AddText("Please pay your bills first");
 
                         return NotFound("Please pay your bills first");
@@ -93,6 +99,13 @@ namespace OrderApi.Controllers
                     // Create order.
                     order.Status = Order.OrderStatus.completed;
                     var newOrder = repository.Add(order);
+
+                    new ToastContentBuilder()
+                    .AddArgument("action", "viewConversation")
+                    .AddArgument("conversationId", 9813)
+                    .AddText("Order Accepted")
+                    .AddText("Your order have been placed");
+
                     return CreatedAtRoute("GetOrder", new { id = newOrder.Id }, newOrder);
                 }
                 catch(Exception ex)
@@ -107,7 +120,7 @@ namespace OrderApi.Controllers
                 .AddArgument("action", "viewConversation")
                 .AddArgument("conversationId", 9813)
                 .AddText("Not enough items in stock")
-                .AddText("Choose something else");
+                .AddText("Plase choose something else");
 
                 return StatusCode(500, "Not enough items in stock.");
             }
